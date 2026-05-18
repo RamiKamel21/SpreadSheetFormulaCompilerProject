@@ -1,19 +1,14 @@
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * Base class for all nodes in the Abstract Syntax Tree.
- * Follows the Interpreter Design Pattern for evaluation.
- */
+
 abstract class Node {
     public abstract String print(String indent);
     public abstract double evaluate(Map<String, Double> dataContext) throws Exception;
     public abstract Map<String, Object> toJsonMap();
 }
 
-/**
- * Root node representing the entire formula.
- */
+// Mariam Saeed Id:20230540
 class FormulaNode extends Node {
     private final Node expression;
 
@@ -38,10 +33,7 @@ class FormulaNode extends Node {
         return map;
     }
 }
-
-/**
- * Handles Binary Operations (+, -, *, /, comparisons).
- */
+// Salma Kamal ID:20230256
 class BinaryOpNode extends Node {
     private final String op;
     private final Node left, right;
@@ -89,9 +81,7 @@ class BinaryOpNode extends Node {
     }
 }
 
-/**
- * Handles Unary Operations (e.g., negative numbers like -5).
- */
+// Salma Kamal ID:20230256
 class UnaryOpNode extends Node {
     private final String op;
     private final Node right;
@@ -121,9 +111,7 @@ class UnaryOpNode extends Node {
     }
 }
 
-/**
- * Represents a constant numeric value.
- */
+
 class LiteralNode extends Node {
     private final double value;
 
@@ -149,9 +137,7 @@ class LiteralNode extends Node {
     }
 }
 
-/**
- * Represents a reference to a spreadsheet cell (e.g., A1, B2).
- */
+//Toka Adbelaziz Id:20230142
 class CellNode extends Node {
     private final String ref;
 
@@ -180,9 +166,7 @@ class CellNode extends Node {
     }
 }
 
-/**
- * Handles Excel-like function calls (SUM, IF, MAX, etc.).
- */
+//Rami Kamel Erian Id:20230199
 class FunctionNode extends Node {
     private final String name;
     private final List<Node> args;
