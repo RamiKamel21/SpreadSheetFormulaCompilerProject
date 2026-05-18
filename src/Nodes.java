@@ -1,13 +1,19 @@
 import java.util.*;
 import java.util.stream.Collectors;
 
-
+/**
+ * Base class for all nodes in the Abstract Syntax Tree.
+ * Follows the Interpreter Design Pattern for evaluation.
+ */
 abstract class Node {
     public abstract String print(String indent);
     public abstract double evaluate(Map<String, Double> dataContext) throws Exception;
+    public abstract Map<String, Object> toJsonMap();
 }
 
-
+/**
+ * Root node representing the entire formula.
+ */
 class FormulaNode extends Node {
     private final Node expression;
 
@@ -24,10 +30,18 @@ class FormulaNode extends Node {
     public double evaluate(Map<String, Double> ctx) throws Exception {
         return expression.evaluate(ctx);
     }
-
+    @Override
+    public Map<String, Object> toJsonMap() {
+        Map<String, Object> map = new LinkedHashMap<>();
+        map.put("type", "Formula");
+        map.put("expression", expression.toJsonMap());
+        return map;
+    }
 }
 
-
+/**
+ * Handles Binary Operations (+, -, *, /, comparisons).
+ */
 class BinaryOpNode extends Node {
     private final String op;
     private final Node left, right;
@@ -64,9 +78,20 @@ class BinaryOpNode extends Node {
             default -> throw new Exception("Unknown operator: " + op);
         };
     }
+    @Override
+    public Map<String, Object> toJsonMap() {
+        Map<String, Object> map = new LinkedHashMap<>();
+        map.put("type", "BinaryOp");
+        map.put("operator", op);
+        map.put("left", left.toJsonMap());
+        map.put("right", right.toJsonMap());
+        return map;
+    }
 }
 
-
+/**
+ * Handles Unary Operations (e.g., negative numbers like -5).
+ */
 class UnaryOpNode extends Node {
     private final String op;
     private final Node right;
@@ -86,9 +111,19 @@ class UnaryOpNode extends Node {
         if (op.equals("-")) return -right.evaluate(ctx);
         return right.evaluate(ctx);
     }
+    @Override
+    public Map<String, Object> toJsonMap() {
+        Map<String, Object> map = new LinkedHashMap<>();
+        map.put("type", "UnaryOp");
+        map.put("operator", op);
+        map.put("operand", right.toJsonMap());
+        return map;
+    }
 }
 
-
+/**
+ * Represents a constant numeric value.
+ */
 class LiteralNode extends Node {
     private final double value;
 
@@ -105,8 +140,18 @@ class LiteralNode extends Node {
     public double evaluate(Map<String, Double> ctx) {
         return value;
     }
+    @Override
+    public Map<String, Object> toJsonMap() {
+        Map<String, Object> map = new LinkedHashMap<>();
+        map.put("type", "Literal");
+        map.put("value", value);
+        return map;
+    }
 }
 
+/**
+ * Represents a reference to a spreadsheet cell (e.g., A1, B2).
+ */
 class CellNode extends Node {
     private final String ref;
 
@@ -126,10 +171,18 @@ class CellNode extends Node {
         }
         return ctx.get(ref);
     }
-
+    @Override
+    public Map<String, Object> toJsonMap() {
+        Map<String, Object> map = new LinkedHashMap<>();
+        map.put("type", "Cell");
+        map.put("reference", ref);
+        return map;
+    }
 }
 
-
+/**
+ * Handles Excel-like function calls (SUM, IF, MAX, etc.).
+ */
 class FunctionNode extends Node {
     private final String name;
     private final List<Node> args;
@@ -147,7 +200,14 @@ class FunctionNode extends Node {
         }
         return sb.toString();
     }
-
+    @Override
+    public Map<String, Object> toJsonMap() {
+        Map<String, Object> map = new LinkedHashMap<>();
+        map.put("type", "Function");
+        map.put("name", name.toUpperCase());
+        map.put("arguments", args.stream().map(Node::toJsonMap).collect(Collectors.toList()));
+        return map;
+    }
 
     @Override
     public double evaluate(Map<String, Double> ctx) throws Exception {
